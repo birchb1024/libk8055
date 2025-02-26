@@ -1,4 +1,4 @@
-The k8055 require libusb-0.1.9 or newer and kernel 2.4.18 or never.
+The k8055 require libusb-0.1.9 or newer and kernel 2.4.18 or newer.
 
 install:
 	# make all
