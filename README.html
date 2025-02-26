@@ -1,0 +1,323 @@
+<html>
+<head>
+<title>k8055 library for Linux</title>
+</head>
+<body bgcolor="#6A7D96">
+<table width="100%" cellpadding="2" cellspacing="0">
+<tr>
+<td bgcolor="#93A0B3" colspan="2">
+<h1>Linux k8055 library</h1> 
+<center><a href="#intro">Introduction</a> <a href="#program">The base program</a> <a href="#usb">Set USB permissions</a> <a href="#download">Download</a>
+
+</td>
+</tr>
+<tr>
+<td  bgcolor="#93A0B3" colspan="2">
+<a NAME="intro"><h2>Introduction</h2>
+</td>
+</tr>
+<tr>
+<td bgcolor="#AEB8C6">
+<p>These files cloned from Sven Lindberg's libk8055 <a href="https://sourceforge.net/projects/libk8055/">sourceforge project page</a> at version 0.4.1.</p>
+<p>This software allows access to Velleman's K8055 card. This software was developed to replace all other half-complete softwares for the
+k8055 board under Linux. The library is made from scratch with the same functions as 
+described in Velleman's <a href="http://www.Velleman.be/Downloads/0/user/Usermanual_K8055_DLL_UK.pdf">DLL usermanual</a>.
+The command line tool is developed from Julien Etelain and Edward Nys code.</p>
+
+<p>The reason for writing another driver for Linux was to get the debounce time
+to work correctly. Nobody seemed to have figured out how it works (nor did Velleman care to explain)
+so I studied it and have it working now with +-4% accuracy of the actual settime. Note that the Velleman's DLL doesn't even get this close.</p>
+
+<p>Another reason was to make it simple to use by writing a library for the k8055,
+libk8055. Just by using "#include &#60;k8055.h&#62;" and compiling with "-lk8055" flags
+you have access to all the functions described in Velleman's DLL documentation.</p>
+
+<p>The library is now also available in <b>python</b>, thanks to Pjetur G. Hjaltason. Included with the source and some examples as well!</p>
+
+<p>Developer : Sven Lindberg &#60;k8055 @ mrbrain.mine.nu&#62; (python by Pjetur G. Hjaltason &#60;pjetur @ pjetur.net&#62;)</p>
+
+<p>License : <a href="files/COPYING">GPL</a></p
+
+<p>Version : 0.4</p>
+
+<p><i>Note : This project or webpage is not maintained any more (atleast not much).</i></p>
+
+<p>Links
+<ul>
+<li><a href="http://www.robert-arnold.de/cms/2010/10/zugriff-fur-nicht-root-user-auf-usb-board-k8055-unter-ubuntu-9-10-erlauben/">How to grant access to users for the k8055 in Ubuntu 9.10 </a></li>
+<li><a href="http://vellemank8055.googlepages.com/">Velleman K8055 USB Experiment Interface Board, GUI for Linux</a></li>
+<li><a href="http://soft.pmad.net/k8055/">k8055 for Mac OS X</a></li>
+<li><a href="http://www.Velleman.be/">Velleman</a></li>
+<li><a href="http://www.Velleman.be/common/product.Aspx?lan=1&id=351346">k8055 card at Velleman</a></li>
+</ul>
+</p>
+</td>
+
+<td  bgcolor="#AEB8C6" valign="top">
+<img src="k8055.jpg" alt="the k8055 card"/>
+</td>
+<tr>
+<td  bgcolor="#93A0B3" colspan="2">
+<a NAME="program"><h2>The base program</h2>
+<h3>Requirements</h3>
+</td>
+</tr>
+<tr>
+<td  bgcolor="AEB8C6" colspan="2">
+<ul>
+<li>GCC</li>
+<li>libusb : <a href="http://libusb.sourceforge.net/">http://libusb.sourceforge.net/</a> newer than 0.1.9</li>
+
+<li>kernel newer than 2.4.18
+</ul>
+</td>
+</tr>
+<tr>
+<td  bgcolor="#93A0B3" colspan="2">
+<h3>Compilation</h3>
+
+<p><b>Library and command line program</b></p>
+</td>
+</tr>
+<tr>
+<td  bgcolor="AEB8C6" colspan="2">
+<pre>make all
+make install</pre>
+
+default install paths are <pre>/usr/local/bin, /usr/local/lib, /usr/local/include and /usr/local/man/man1/</pre>
+
+If your system doesn't use these paths you can create a file in <i>etc/ld.so.conf.d/</i> for the libk8055 like this:
+<pre>echo "/usr/local/lib" > /etc/ld.so.conf.d/k8055.conf</pre> and run <i>ldconfig</i> after.
+
+Note that the command line tool, <i>k8055</i>, has a manual page that can be read by invoking <pre>man k8055</pre>
+</td>
+</tr>
+<tr>
+<td  bgcolor="#93A0B3" colspan="2">
+<p><b>Your own program using the k8055 library</b></p>
+</td>
+</tr>
+
+<tr>
+<td  bgcolor="AEB8C6" colspan="2">
+<pre>gcc -Wall -lk8055 main.c</pre> 
+
+Older than 0.3 version:
+<pre>gcc -Wall -lusb -lk8055 main.c</pre>
+
+<p>This assumes you have all code in main.c, otherwise add necessary link options. Use "<i>#include &#60;k8055.h&#62;</i>" 
+	in the beginning of the C-code to use the k8055 library.</p>
+</td>
+</tr>
+<tr>
+<td  bgcolor="#93A0B3" colspan="2">
+<h3>Syntax</h3>
+</td>
+</tr>
+<tr>
+<td  bgcolor="AEB8C6" colspan="2">
+
+<p>The provided command line program offers some options. You can use this program
+for script languages or just for controlling stuff by hand.</p>
+
+<p>
+<b>Syntax</b> : k8055 [-p:(number)] [-d:(value)] [-a1:(value)] [-a2:(value)] [-num:(number) [-delay:(number)]] [-dbt1:(value)] [-dbt2:(value)] [-reset1] [-reset2] [-debug]
+<ul>
+<li>-p:(number)		Set board address (0-3)</li>
+<li>-d:(value)		Set digital output value (8 bits in decimal)</li>
+<li>-a1:(value)		Set analog output 1 value (0-255)</li>
+<li>-a2:(value)		Set analog output 2 value (0-255)</li>
+<li>-num:(number)   Set number of measurements	</li>
+
+<li>-delay:(number) Set delay between two measurements (in msec)		</li>
+<li>-dbt1:(value)   Set debounce time for counter 1 (0-7450 in msec)	</li>
+<li>-dbt2:(value)   Set debounce time for counter 2 (0-7450 in msec)	</li>
+<li>-reset1			Reset counter 1</li>
+<li>-reset2			Reset counter 2</li>
+<li>-debug			Activate debug mode</li>
+</ul>
+
+Exemple : k8055 -p:1 -d:147 -a1:25 -a2:203
+
+</p>
+<p>
+
+<b>Output</b> : (timestamp);(digital);(analog 1);(analog 2);(counter 1);(counter 2)<br/>
+Note : timestamp is the number of msec when data is read since program start<br/>
+Exemple : 499;16;128;230;9;8
+<ul>
+<li>499 : Measurement done 499 msec after program start</li>
+<li>16  : Digital input value is 10000 (I5=1, all other are 0)</li>
+<li>128 : Analog 1 input value is 128</li>
+<li>230 : Analog 2 input value is 230</li>
+<li>9   : Counter 1 value is 9</li>
+<li>8   : Counter 2 value is 8</li>
+</ul>
+
+</p>
+</td>
+</tr>
+<tr>
+<td  bgcolor="#93A0B3" colspan="2">
+<a NAME="usb"><h2>How to control user permissions to a USB-device</h2>
+</td>
+</tr>
+<tr>
+<td  bgcolor="AEB8C6" colspan="2">
+With the new libusb packages, many USB devices are accessed through it and not through a device node in <i>/dev</i>. 
+
+<i>Udev</i> can not be used to set permissions for these devices since a <i>/dev</i> node doesn't exist. 
+
+This small HOW-TO will help to explain how to allow non-root access to these devices using the events generated by <b>hotplug</b>.
+</td>
+</tr>
+<tr>
+<td  bgcolor="#93A0B3" colspan="2">
+<h3>Requirements:</h3>
+</td>
+</tr>
+<tr>
+
+<td  bgcolor="AEB8C6" colspan="2">
+hotplug and libusb<br><br>
+</td>
+</tr>
+<tr>
+<td  bgcolor="#93A0B3" colspan="2">
+<h3>Setup the hotplug</h3>
+</td>
+</tr>
+<tr>
+<td  bgcolor="AEB8C6" colspan="2">
+All these steps are run as <i>root</i>.
+<ol>
+
+<li> Make sure usbfs is mounted.
+<pre>	mount </pre>
+
+Should list a line like this: 
+<pre>	usbfs on /proc/bus/usb type usbfs (rw) </pre>
+
+If it's not listed, you have a problem that needs to be fixed first. 
+Make sure you have script /etc/init.d/localmount running on boot. If you have another Linux distribution
+than <b>Gentoo</b> the localmount might not be in the described paths. You can then skip the three following steps and refer to the system manual how init.d is used. To check use (in <b>Gentoo</b> systems): 
+
+<pre>	rc-update -s </pre>
+
+If it isn't, add it like this: 
+<pre>	rc-update add localmount boot </pre>
+
+and start it now. 
+<pre>	/etc/init.d/localmount start </pre>
+
+<li>if you use gentoo make sure you have the usbutils package:
+<pre>	emerge usbutils </pre>
+
+
+<li>Plug in the usb device for which you want to set up permissions. <br><br>
+
+
+<li>Run <b>lsusb</b> and note the vender id and product id for your device. 
+Here is a sample output of my device in this exampleCode: 
+<pre>	Bus 001 Device 007: ID 10cf:5502</pre>
+
+The first value after ID is the Vendor ID, and the second value after ID is the Product ID. 
+<br><br> 
+
+<li>Change to /etc/hotplug/usb/Code: 
+
+<pre>	cd /etc/hotplug/usb/ </pre>
+
+<li>We are going to make a usermap file for your device. You can choose any name for the file as long as it ends in <b>.usermap</b>. For my example, I am setting up my Velleman card. Its vender ID is 0x10cf and its product ID is 0x5502. So I created the file <b>k8055.usermap</b> with the following contents:Code: 
+<pre>	k8055 0x0003 0x10cf 0x5502 0x0000 0x0000 0x00 0x00 0x00 0x00 0x00 0x00 0x00 </pre>
+
+The first word, (k8055 in my case), is a program that we make that is called when the device is attached. You can chose any name but I like to keep the same name as the beginning as usermap file. 
+<br>
+Leave the second value, (0x0003), but replace the second and third values with your vender ID and product ID. 
+
+<br><br> 
+
+<li>Now we are going to create the program that correctly fixes the permissions. Remember to create the file <u>with the name</u> you used as the <i>first word</i> in your .usermap file. (In my case k8055) 
+
+<br>Paste the following into the file you just created. 
+<pre>
+	#!/bin/sh 
+
+	# This file is part of sane-backends. 
+	# 
+	# This script changes the permissions and ownership of a USB device under 
+	# /proc/bus/usb to grant access to this device to users in the k8055 group. 
+	# 
+	# Ownership is set to root:k8055, permissions are set to 0660. 
+	# 
+	# Arguments : 
+	# ----------- 
+	# ACTION=[add|remove] 
+	# DEVICE=/proc/bus/usb/BBB/DDD 
+	# TYPE=usb 
+
+	if [ -z "${DEVICE}" ] ; then 
+	        IF=$(echo ${DEVPATH} | sed 's:\(bus/usb/devices/\)\(.*\)-\(.*\):\2:') 
+	        if [ -r /sys/${DEVPATH}/devnum ]; then 
+	             DEV=$(cat /sys/${DEVPATH}/devnum) 
+	        else 
+	             DEV=1 # you'll have to adjust this manually for kernel < 2.6.6 
+	        fi 
+	        DEVICE=$(printf '/proc/bus/usb/%.03d/%.03d' ${IF} ${DEV}) 
+	fi 
+	
+	if [ "$ACTION" = "add" -a "$TYPE" = "usb" ]; then 
+	  chown root:k8055 "$DEVICE" 
+	  chmod 0660 "$DEVICE" 
+	fi 
+</pre>
+
+This code is orginally from the sane-backends package. 
+<br><br> 
+
+<li>These linesCode: 
+<pre>	chown root:k8055 "$DEVICE"            # set owner=root and group=k8055
+	chmod 0660 "$DEVICE"                  # root access=rw, group access=rw </pre>
+
+set the owner, group and permissions. Change these as required for your needs. 
+(For the noobies among you, 660 is common and allows read and write access to root and members of the group) 
+<br>
+In my case root is owner and the group is k8055. Both owner and group members have read-write access. 
+<br><br> 
+
+<li>Make sure this file is executable. In my case:
+<pre>	chmod a+x k8055</pre>
+
+<li>Create the new group to which you will allow access to this device. (Matches the group you set in file above) In my case, k8055: 
+<pre>	groupadd k8055 </pre>
+
+<li>Now use the gpasswd command to add users to the group you created in /etc/group. 
+In my example, I am going to add user sven to group k8055: 
+<pre>	gpasswd -a sven k8055 </pre>
+
+<li>Logout of account. Login again. (Forces changes to group membership to be recognized). You can also try to run "source /etc/profile" but the logout/login is the safest way to do it. 
+<br><br> 
+<li>If you check /proc/bus/usb/... your device should have the owner, group, and permissions you set. If you properly included yourself in the group and gave write access, you should be able to access the device as the user. 
+
+</ol>
+This should work with all devices that use libusb and don't use device nodes.
+
+</td>
+</tr>
+<tr>
+<td  bgcolor="#93A0B3" colspan="2">
+<a NAME="download"><h2>Downloads</h2>
+
+</td>
+</tr>
+<tr>
+<td  bgcolor="AEB8C6" colspan="2">
+<ul>
+<li><a 
+href="https://github.com/birchb1024/libk8055">sources in GitHub</a> : The k8055library with cmd-line tool and a man page. The older version is also available at the <a href="https://sourceforge.net/projects/libk8055/">sourceforge project page</a> if needed. </li>
+</ul>
+</td>
+</tr>
+</table>
+</body>
+</html>
