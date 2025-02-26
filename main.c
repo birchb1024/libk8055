@@ -190,7 +190,7 @@ int read_param(int argc,char *params[])
 /*
 	Give current timestamp in miliseconds
 */
-inline long int time_msec ( void ) {
+long int time_msec ( void ) {
 	struct timeval t; struct timezone tz;
 	gettimeofday (&t,&tz);
 	return (1000*t.tv_sec)+(t.tv_usec/1000);
