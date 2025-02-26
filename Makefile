@@ -4,13 +4,12 @@
 #
 # change this to your distribution default
 # usually /usr/local or /usr
-PREFIX = ?/usr/local
+PREFIX = /usr/local
 CC = gcc
 EXEC = k8055
 VERSION =0.4.1
 BINDIR = $(PREFIX)/bin
 LIBDIR = $(PREFIX)/lib
-PYLIBDIR = pyk8055
 INCLUDEDIR = $(PREFIX)/include
 MANDIR = $(PREFIX)/man/man1
 OBJS = main.o libk8055.o
@@ -38,12 +37,8 @@ k8055_prog: $(OBJS)
 	$(CC) $(OBJS) -o $(EXEC) $(LIBS)
 	# strip $(EXEC)
 
-pylib: $(PYLIBDIR)/libk8055.i libk8055.c
-	export VERSION=$(VERSION); $(MAKE) -C $(PYLIBDIR)
-
 clean:	
 	rm -f *.o libk8055.so libk8055.so.$(VERSION) $(EXEC) libk8055.a
-	@$(MAKE) -C $(PYLIBDIR) clean
 
 install: k8055_prog libk8055.so.$(VERSION)
 	cp -f $(EXEC) $(BINDIR)/
@@ -60,9 +55,6 @@ install: k8055_prog libk8055.so.$(VERSION)
 	  mkdir -p $(MANDIR); \
 	fi
 	cp -f man/k8055.1.gz $(MANDIR)/
-
-pyinstall: $(PYLIBDIR)/libk8055.i
-	@$(MAKE) -C $(PYLIBDIR) install
 
 uninstall:
 	rm -f $(BINDIR)/$(EXEC) $(LIBDIR)/libk8055* $(INCLUDEDIR)/k8055.h
